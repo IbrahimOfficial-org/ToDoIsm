@@ -238,6 +238,12 @@
     color:var(--ink);
   }
   .add-task input::placeholder{ color:var(--ink-faint); }
+  .task-controls{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
   .task-select{
     appearance:none;
     -webkit-appearance:none;
@@ -474,13 +480,15 @@
     <div class="add-task">
       <span class="pencil">✏️</span>
       <input type="text" id="new-task-input" placeholder="Add a new task...">
-      <select class="task-select" id="task-category" title="Category">
-        <option value="Personal">Personal</option>
-        <option value="Work">Work</option>
-        <option value="Health">Health</option>
-      </select>
-      <input type="date" class="task-select" id="task-date" title="Date">
-      <button class="add-btn" id="add-task-btn">+</button>
+      <div class="task-controls">
+        <select class="task-select" id="task-category" title="Category">
+          <option value="Personal">Personal</option>
+          <option value="Work">Work</option>
+          <option value="Health">Health</option>
+        </select>
+        <input type="date" class="task-select" id="task-date" title="Date">
+        <button class="add-btn" id="add-task-btn">+</button>
+      </div>
     </div>
 
     <div class="tasks-head">
