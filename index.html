@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TaskFlow</title>
+<title>Listism</title>
 <style>
   :root{
     --bg-a:#fdf1e3;
@@ -14,7 +14,7 @@
     --ink-faint:#b3accb;
     --active:#f7a6a0;
     --active-soft:#fcd9d6;
-    --accent:#f2836f;
+    --accent:#e2637c;
     --card-green:#b7e4c7;
     --card-green-deep:#4fae6f;
     --card-purple:#cdc2f0;
@@ -407,7 +407,7 @@
 <div class="app">
 
   <aside class="sidebar">
-    <div class="brand"><span class="check">✔</span> TaskFlow</div>
+    <div class="brand"><span class="check">✔</span> Listism</div>
 
     <nav class="navlist" id="navlist">
       <div class="navitem active" data-view="today">Today <span class="count" id="count-today">0</span></div>
@@ -483,15 +483,7 @@
     return d.toISOString().slice(0,10);
   };
 
-  const defaultTasks = () => ([
-    { id: 1, title:'Buy groceries', time:'9:00 AM', tag:'Errands', list:'today', color:'green', priority:false, done:true },
-    { id: 2, title:'Read a chapter', time:'8:00 PM', tag:'Personal', list:'today', color:'purple', priority:false, done:false },
-    { id: 3, title:'Team standup meeting', time:'10:30 AM', tag:'Work', list:'today', color:'pink', priority:true, done:false },
-    { id: 4, title:'Prepare presentation', time:'2:00 PM', tag:'Work', list:'today', color:'yellow', priority:true, done:false },
-    { id: 5, title:'Yoga session', time:'6:00 PM', tag:'Health', list:'today', color:'blue', priority:false, done:false },
-    { id: 6, title:'Renew car insurance', time:'11:00 AM', tag:'Personal', list:'upcoming', color:'purple', priority:false, done:false },
-    { id: 7, title:'Client kickoff call', time:'3:00 PM', tag:'Work', list:'upcoming', color:'pink', priority:true, done:false }
-  ]);
+  const defaultTasks = () => ([]);
 
   let tasks = [];
   let currentView = 'today';
