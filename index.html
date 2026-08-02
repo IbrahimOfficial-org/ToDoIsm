@@ -238,6 +238,27 @@
     color:var(--ink);
   }
   .add-task input::placeholder{ color:var(--ink-faint); }
+  .task-select{
+    appearance:none;
+    -webkit-appearance:none;
+    border:1px solid rgba(47,42,61,0.12);
+    border-radius:14px;
+    padding:9px 12px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    background:#fff;
+    outline:none;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .task-select:hover{ border-color:var(--active); }
+  .task-select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--active-soft); }
+  @media (max-width:560px){
+    .add-task{ flex-wrap:wrap; }
+    .task-select{ flex:1 1 45%; }
+  }
   .add-btn{
     width:40px;
     height:40px;
@@ -442,6 +463,15 @@
     <div class="add-task">
       <span class="pencil">✏️</span>
       <input type="text" id="new-task-input" placeholder="Add a new task...">
+      <select class="task-select" id="task-category" title="Category">
+        <option value="Personal">Personal</option>
+        <option value="Work">Work</option>
+        <option value="Health">Health</option>
+      </select>
+      <select class="task-select" id="task-timeframe" title="Timeframe">
+        <option value="today">Today</option>
+        <option value="upcoming">Upcoming</option>
+      </select>
       <button class="add-btn" id="add-task-btn">+</button>
     </div>
 
@@ -501,6 +531,8 @@
     progressLabel: document.getElementById('progress-label'),
     progressFill: document.getElementById('progress-fill'),
     newTaskInput: document.getElementById('new-task-input'),
+    taskCategory: document.getElementById('task-category'),
+    taskTimeframe: document.getElementById('task-timeframe'),
     addTaskBtn: document.getElementById('add-task-btn'),
     searchInput: document.getElementById('search-input')
   };
@@ -637,11 +669,8 @@
     const color = COLORS[colorCursor % COLORS.length];
     colorCursor++;
 
-    let list = 'today', tag = 'Personal';
-    if (currentView === 'upcoming') list = 'upcoming';
-    if (currentView === 'work') tag = 'Work';
-    if (currentView === 'personal') tag = 'Personal';
-    if (currentView === 'completed') list = 'today'; // completed view: just drop into today, unchecked
+    const tag = els.taskCategory.value;
+    const list = els.taskTimeframe.value;
 
     const time = new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
 
@@ -663,6 +692,11 @@
   els.navitems.forEach(el => {
     el.addEventListener('click', () => {
       currentView = el.dataset.view;
+      // pre-select sensible defaults in the add-task dropdowns based on current view
+      if (currentView === 'upcoming') els.taskTimeframe.value = 'upcoming';
+      if (currentView === 'work') els.taskCategory.value = 'Work';
+      if (currentView === 'personal') els.taskCategory.value = 'Personal';
+      if (currentView === 'completed') els.taskTimeframe.value = 'today';
       render();
     });
   });
