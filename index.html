@@ -255,6 +255,17 @@
   }
   .task-select:hover{ border-color:var(--active); }
   .task-select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--active-soft); }
+  input.task-select{
+    appearance:auto;
+    -webkit-appearance:auto;
+    color:var(--ink);
+  }
+  input.task-select::-webkit-calendar-picker-indicator{
+    cursor:pointer;
+    opacity:0.6;
+    transition:opacity .15s ease;
+  }
+  input.task-select::-webkit-calendar-picker-indicator:hover{ opacity:1; }
   @media (max-width:560px){
     .add-task{ flex-wrap:wrap; }
     .task-select{ flex:1 1 45%; }
@@ -468,10 +479,7 @@
         <option value="Work">Work</option>
         <option value="Health">Health</option>
       </select>
-      <select class="task-select" id="task-timeframe" title="Timeframe">
-        <option value="today">Today</option>
-        <option value="upcoming">Upcoming</option>
-      </select>
+      <input type="date" class="task-select" id="task-date" title="Date">
       <button class="add-btn" id="add-task-btn">+</button>
     </div>
 
@@ -508,9 +516,26 @@
   const STORAGE_KEY = 'taskflow:tasks:v1';
   const COLORS = ['green','purple','pink','yellow','blue'];
 
-  const todayStr = () => {
+  const localDateStr = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const todayStr = () => localDateStr(new Date());
+
+  const dateStrOffset = (offset) => {
     const d = new Date();
-    return d.toISOString().slice(0,10);
+    d.setDate(d.getDate() + offset);
+    return localDateStr(d);
+  };
+
+  const formatShortDate = (dateStr) => {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+    return date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
   };
 
   const defaultTasks = () => ([]);
@@ -532,7 +557,7 @@
     progressFill: document.getElementById('progress-fill'),
     newTaskInput: document.getElementById('new-task-input'),
     taskCategory: document.getElementById('task-category'),
-    taskTimeframe: document.getElementById('task-timeframe'),
+    taskDate: document.getElementById('task-date'),
     addTaskBtn: document.getElementById('add-task-btn'),
     searchInput: document.getElementById('search-input')
   };
@@ -550,6 +575,12 @@
     } else {
       tasks = defaultTasks();
     }
+    // migrate older tasks that stored a 'list' label instead of a 'date'
+    tasks = tasks.map(t => {
+      if (t.date) return t;
+      const date = t.list === 'upcoming' ? dateStrOffset(1) : todayStr();
+      return Object.assign({}, t, { date });
+    });
     nextId = tasks.reduce((m,t)=>Math.max(m,t.id),0) + 1;
   }
 
@@ -562,8 +593,8 @@
   }
 
   function matchesView(t, view){
-    if (view === 'today') return t.list === 'today' && !t.done;
-    if (view === 'upcoming') return t.list === 'upcoming' && !t.done;
+    if (view === 'today') return t.date === todayStr() && !t.done;
+    if (view === 'upcoming') return t.date > todayStr() && !t.done;
     if (view === 'work') return t.tag === 'Work' && !t.done;
     if (view === 'personal') return t.tag === 'Personal' && !t.done;
     if (view === 'completed') return t.done;
@@ -606,8 +637,8 @@
 
     els.tasksCount.textContent = `${visible.length} task${visible.length===1?'':'s'}`;
 
-    // progress card always reflects "today" list regardless of current view
-    const todaysAll = tasks.filter(t => t.list === 'today');
+    // progress card always reflects today's date regardless of current view
+    const todaysAll = tasks.filter(t => t.date === todayStr());
     const todaysDone = todaysAll.filter(t => t.done).length;
     const pct = todaysAll.length ? Math.round((todaysDone/todaysAll.length)*100) : 0;
     els.progressPct.textContent = pct + '%';
@@ -628,12 +659,13 @@
       card.className = `card ${t.color}` + (t.done ? ' done' : '');
       card.dataset.id = t.id;
 
+      const dateLabel = t.date && t.date !== todayStr() ? formatShortDate(t.date) : '';
       card.innerHTML = `
         <div class="checkbox ${t.done ? 'checked' : ''}" data-action="toggle">${checkIcon()}</div>
         <div class="card-body">
           <div class="card-row">
             <div class="card-title">${escapeHtml(t.title)}</div>
-            <div class="card-time">${escapeHtml(t.time || '')}</div>
+            <div class="card-time">${dateLabel ? escapeHtml(dateLabel) + ' · ' : ''}${escapeHtml(t.time || '')}</div>
           </div>
           <div class="card-tags">
             <span class="tag">${escapeHtml(t.tag)}</span>
@@ -670,7 +702,7 @@
     colorCursor++;
 
     const tag = els.taskCategory.value;
-    const list = els.taskTimeframe.value;
+    const date = els.taskDate.value || todayStr();
 
     const time = new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
 
@@ -678,8 +710,8 @@
       id: nextId++,
       title: title.trim(),
       time,
+      date,
       tag,
-      list,
       color,
       priority:false,
       done:false
@@ -692,11 +724,11 @@
   els.navitems.forEach(el => {
     el.addEventListener('click', () => {
       currentView = el.dataset.view;
-      // pre-select sensible defaults in the add-task dropdowns based on current view
-      if (currentView === 'upcoming') els.taskTimeframe.value = 'upcoming';
+      // pre-select sensible defaults in the add-task inputs based on current view
+      if (currentView === 'today' || currentView === 'completed') els.taskDate.value = todayStr();
+      if (currentView === 'upcoming') els.taskDate.value = dateStrOffset(1);
       if (currentView === 'work') els.taskCategory.value = 'Work';
       if (currentView === 'personal') els.taskCategory.value = 'Personal';
-      if (currentView === 'completed') els.taskTimeframe.value = 'today';
       render();
     });
   });
@@ -731,6 +763,9 @@
   // ---------- init ----------
   (async function init(){
     await loadTasks();
+    // default the date picker to today and prevent selecting past dates
+    els.taskDate.value = todayStr();
+    els.taskDate.min = todayStr();
     render();
   })();
 
