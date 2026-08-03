@@ -4,7 +4,7 @@
   "description": "A Todo app\r its kinda good",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node a11y-audit.js && node a11y-final.js"
   },
   "repository": {
     "type": "git",

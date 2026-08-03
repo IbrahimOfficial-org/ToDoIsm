@@ -25,12 +25,12 @@ Highlights:
 ## Auditing
 
 ```sh
-npm install          # installs axe-core + puppeteer-core (dev-only)
-node a11y-audit.js   # axe WCAG 2.x AA + best-practice across desktop/mobile
-                     # states, plus keyboard focus & toggle smoke tests
-node a11y-final.js   # axe with ALL rules (incl. experimental), duplicate-id,
-                     # console-error and reduced-motion checks
+npm install    # installs axe-core + puppeteer-core (dev-only)
+npm run test   # full a11y suite: axe WCAG 2.x AA + best-practice + all-rules
+               # sweep, keyboard focus/toggle smoke tests, duplicate-id,
+               # console-error and reduced-motion checks (exit 0 = pass)
 ```
 
-Both scripts drive the system Chrome install headlessly; edit `CHROME` in the
-scripts if your browser lives elsewhere.
+`npm run test` runs `a11y-audit.js` then `a11y-final.js`; both drive the
+system Chrome install headlessly — edit `CHROME` in the scripts if your
+browser lives elsewhere.
